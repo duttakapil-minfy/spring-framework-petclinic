@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 
 @SpringJUnitWebConfig(locations = {"classpath:spring/mvc-test-config.xml", "classpath:spring/mvc-core-config.xml"})
+@org.springframework.test.context.ActiveProfiles("test")
 class OwnerControllerTests {
 
     private static final int TEST_OWNER_ID = 1;

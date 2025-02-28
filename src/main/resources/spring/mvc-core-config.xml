@@ -20,9 +20,14 @@
         - POJOs labeled with the @Controller and @Service annotations are auto-detected.
     -->
     <context:component-scan
-        base-package="org.springframework.samples.petclinic.web,
-                      org.springframework.samples.petclinic.rest,
-                      org.springframework.samples.petclinic.config"/>
+        base-package="org.springframework.samples.petclinic.web"/>
+        
+    <!-- Only load these components when not in test context -->
+    <beans profile="!test">
+        <context:component-scan
+            base-package="org.springframework.samples.petclinic.rest,
+                          org.springframework.samples.petclinic.config"/>
+    </beans>
 
     <mvc:annotation-driven conversion-service="conversionService">
         <mvc:message-converters>
