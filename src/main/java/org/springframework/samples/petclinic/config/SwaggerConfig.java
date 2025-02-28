@@ -1,10 +1,13 @@
 package org.springframework.samples.petclinic.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,5 +30,13 @@ public class SwaggerConfig {
             .externalDocs(new ExternalDocumentation()
                 .description("Spring PetClinic GitHub")
                 .url("https://github.com/spring-petclinic/spring-framework-petclinic"));
+    }
+    
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+                .group("petclinic-public")
+                .pathsToMatch("/api/**")
+                .build();
     }
 }
