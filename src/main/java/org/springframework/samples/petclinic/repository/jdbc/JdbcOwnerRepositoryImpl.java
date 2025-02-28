@@ -136,6 +136,27 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
                 .update();
         }
     }
+    
+    @Override
+    public void delete(Owner owner) {
+        // Delete visits for all pets of this owner
+        this.jdbcClient.sql("""
+                DELETE FROM visits 
+                WHERE pet_id IN (SELECT id FROM pets WHERE owner_id=:id)
+                """)
+            .param("id", owner.getId())
+            .update();
+            
+        // Delete all pets of this owner
+        this.jdbcClient.sql("DELETE FROM pets WHERE owner_id=:id")
+            .param("id", owner.getId())
+            .update();
+            
+        // Delete the owner
+        this.jdbcClient.sql("DELETE FROM owners WHERE id=:id")
+            .param("id", owner.getId())
+            .update();
+    }
 
     public Collection<PetType> getPetTypes() {
         return this.jdbcClient.sql("SELECT id, name FROM types ORDER BY name")

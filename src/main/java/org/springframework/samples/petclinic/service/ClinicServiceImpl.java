@@ -76,7 +76,12 @@ public class ClinicServiceImpl implements ClinicService {
     public void saveOwner(Owner owner) {
         ownerRepository.save(owner);
     }
-
+    
+    @Override
+    @Transactional
+    public void deleteOwner(Owner owner) {
+        ownerRepository.delete(owner);
+    }
 
     @Override
     @Transactional
