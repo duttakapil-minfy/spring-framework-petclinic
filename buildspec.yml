@@ -1,0 +1,64 @@
+version: 0.2
+
+env:
+  variables:
+    ECR_REPOSITORY_URI: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}"
+    CONTAINER_NAME: "petclinic-backend"
+  parameter-store:
+    SONAR_TOKEN: "/petclinic/sonar/token"
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+      docker: 20
+  
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo Running tests...
+      - cd backend
+      - ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=spring-petclinic_spring-framework-petclinic -Dsonar.organization=spring-petclinic -Dsonar.token=$SONAR_TOKEN
+  
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - cd backend
+      - docker build -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $ECR_REPOSITORY_URI:$IMAGE_TAG $ECR_REPOSITORY_URI:latest
+  
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
+      - docker push $ECR_REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - aws ecs describe-task-definition --task-definition petclinic-task --query taskDefinition > taskdef.json
+      - envsubst < taskdef.json > taskdef-updated.json
+      - echo Creating artifacts for deployment...
+      - |
+        cat > imagedefinitions.json << EOF
+        [
+          {
+            "name": "${CONTAINER_NAME}",
+            "imageUri": "${ECR_REPOSITORY_URI}:${IMAGE_TAG}"
+          }
+        ]
+        EOF
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - taskdef-updated.json
+    - backend/appspec.yml
+  discard-paths: yes
+
+cache:
+  paths:
+    - '/root/.m2/**/*'
+    - 'backend/target/**/*' 

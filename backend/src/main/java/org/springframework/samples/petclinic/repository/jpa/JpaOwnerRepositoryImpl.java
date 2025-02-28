@@ -84,4 +84,10 @@ public class JpaOwnerRepositoryImpl implements OwnerRepository {
         this.em.remove(this.em.contains(owner) ? owner : this.em.merge(owner));
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public Collection<Owner> findAll() {
+        return this.em.createQuery("SELECT owner FROM Owner owner ORDER BY owner.lastName").getResultList();
+    }
+
 }

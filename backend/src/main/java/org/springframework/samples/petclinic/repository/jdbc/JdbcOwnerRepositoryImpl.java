@@ -176,4 +176,22 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
         }
     }
 
+    @Override
+    public Collection<Owner> findAll() {
+        List<Owner> owners = this.jdbcClient.sql("""
+                SELECT id, first_name, last_name, address, city, telephone
+                FROM owners
+                ORDER BY last_name
+                """)
+            .query(BeanPropertyRowMapper.newInstance(Owner.class))
+            .list();
+        
+        // Load pets and visits for each owner
+        for (Owner owner : owners) {
+            loadPetsAndVisits(owner);
+        }
+        
+        return owners;
+    }
+
 }

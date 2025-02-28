@@ -4,7 +4,6 @@ services:
   backend:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
     container_name: petclinic-backend
     restart: unless-stopped
     ports:
@@ -17,7 +16,6 @@ services:
   frontend:
     build: 
       context: ./frontend
-      dockerfile: Dockerfile
     container_name: petclinic-frontend
     restart: unless-stopped
     ports:

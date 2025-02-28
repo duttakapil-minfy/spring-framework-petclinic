@@ -66,4 +66,11 @@ public interface OwnerRepository {
      */
     void delete(Owner owner);
 
+    /**
+     * Retrieve all <code>Owner</code>s from the data store.
+     *
+     * @return a <code>Collection</code> of <code>Owner</code>s
+     */
+    Collection<Owner> findAll();
+
 }

@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 
 @RestController
-@RequestMapping("/api/owners")
+@CrossOrigin(origins = "*")
+@RequestMapping("/api")
 @Tag(name = "Owners", description = "the Owners API")
 public class OwnerRestController {
 
@@ -28,36 +29,34 @@ public class OwnerRestController {
         this.clinicService = clinicService;
     }
 
-    @GetMapping
+    @GetMapping("/owners")
     @Operation(summary = "Get all owners or find by last name",
         description = "Get a list of all owners in the system or find owners by last name")
     @ApiResponse(responseCode = "200", description = "List of owners",
         content = @Content(schema = @Schema(implementation = Owner.class)))
     public ResponseEntity<Collection<Owner>> getOwners(@RequestParam(required = false) String lastName) {
-        if (lastName == null) {
-            lastName = "";
+        if (lastName != null) {
+            return new ResponseEntity<>(clinicService.findOwnerByLastName(lastName), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(clinicService.findAllOwners(), HttpStatus.OK);
         }
-        Collection<Owner> owners = this.clinicService.findOwnerByLastName(lastName);
-        return new ResponseEntity<>(owners, HttpStatus.OK);
     }
 
-    @GetMapping("/{ownerId}")
+    @GetMapping("/owners/{ownerId}")
     @Operation(summary = "Find owner by ID",
         description = "Returns a single owner")
     @ApiResponse(responseCode = "200", description = "Owner found",
         content = @Content(schema = @Schema(implementation = Owner.class)))
     @ApiResponse(responseCode = "404", description = "Owner not found")
-    public ResponseEntity<Owner> getOwner(
-        @Parameter(description = "ID of owner to return")
-        @PathVariable int ownerId) {
-        Owner owner = this.clinicService.findOwnerById(ownerId);
+    public ResponseEntity<Owner> getOwner(@PathVariable("ownerId") int ownerId) {
+        Owner owner = clinicService.findOwnerById(ownerId);
         if (owner == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(owner, HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/owners")
     @Operation(summary = "Add a new owner",
         description = "Creates a new owner in the system")
     @ApiResponse(responseCode = "201", description = "Owner created",
@@ -68,7 +67,7 @@ public class OwnerRestController {
         return new ResponseEntity<>(owner, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{ownerId}")
+    @PutMapping("/owners/{ownerId}")
     @Operation(summary = "Update an existing owner",
         description = "Updates the information for an existing owner")
     @ApiResponse(responseCode = "200", description = "Owner updated",
@@ -95,7 +94,7 @@ public class OwnerRestController {
         return new ResponseEntity<>(currentOwner, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{ownerId}")
+    @DeleteMapping("/owners/{ownerId}")
     @Operation(summary = "Delete an owner",
         description = "Deletes an owner from the system")
     @ApiResponse(responseCode = "204", description = "Owner deleted successfully")

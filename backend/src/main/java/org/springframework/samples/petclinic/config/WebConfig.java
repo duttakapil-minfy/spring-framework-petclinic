@@ -9,33 +9,31 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.ComponentScan;
 
 @Configuration
+@EnableWebMvc
+@ComponentScan(basePackages = {"org.springframework.samples.petclinic.rest"})
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:3000", "http://localhost", "http://frontend", "*")
+        registry.addMapping("/**")
+            .allowedOrigins("*")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(false);
+            .allowedHeaders("*");
     }
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Swagger UI resources
         registry.addResourceHandler("/swagger-ui/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/springdoc-openapi-ui/")
-                .resourceChain(false);
+            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.15.5/");
         
-        // Root static files
-        registry.addResourceHandler("/*.html")
-                .addResourceLocations("classpath:/public/");
-        
-        // API documentation
-        registry.addResourceHandler("/api/**")
-                .addResourceLocations("/api/");
+        registry.addResourceHandler("/webjars/**")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/");
+            
+        registry.addResourceHandler("/**")
+            .addResourceLocations("classpath:/static/");
     }
 
     @Bean
