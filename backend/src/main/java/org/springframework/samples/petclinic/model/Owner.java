@@ -33,6 +33,8 @@ import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.core.style.ToStringCreator;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * Simple JavaBean domain object representing an owner.
  *
@@ -58,6 +60,7 @@ public class Owner extends Person {
     private String telephone;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
+    @JsonManagedReference
     private Set<Pet> pets;
 
 

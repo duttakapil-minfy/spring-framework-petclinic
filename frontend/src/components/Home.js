@@ -15,7 +15,7 @@ const Home = () => {
                 <h5 className="card-title">Find Owners</h5>
                 <p className="card-text">Find owners and their pets in our database.</p>
                 <Link to="/owners" className="btn btn-primary">
-                  Find Owners
+                  Find Owners Now
                 </Link>
               </div>
             </div>

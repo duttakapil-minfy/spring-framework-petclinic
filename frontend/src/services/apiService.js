@@ -1,55 +1,94 @@
 import axios from 'axios';
 
-const API_URL = '/api';
+// Create a custom axios instance with specific configuration
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: true // Enable sending cookies with requests for CORS with credentials
+});
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  config => {
+    console.log('API Request:', config);
+    return config;
+  },
+  error => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  response => {
+    console.log('API Response:', response);
+    return response;
+  },
+  error => {
+    console.error('API Response Error:', error);
+    return Promise.reject(error);
+  }
+);
 
 // Owner API
 export const getOwners = (lastName = '') => {
-    return axios.get(`${API_URL}/owners`, { params: { lastName } });
+  // Use direct URL to avoid any path issues
+  return axios.get(`http://localhost:8080/api/owners${lastName ? `?lastName=${lastName}` : ''}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    withCredentials: true
+  });
 };
 
 export const getOwnerById = (id) => {
-    return axios.get(`${API_URL}/owners/${id}`);
+  return api.get(`/owners/${id}`);
 };
 
 export const createOwner = (owner) => {
-    return axios.post(`${API_URL}/owners`, owner);
+  return api.post('/owners', owner);
 };
 
 export const updateOwner = (id, owner) => {
-    return axios.put(`${API_URL}/owners/${id}`, owner);
+  return api.put(`/owners/${id}`, owner);
 };
 
 export const deleteOwner = (id) => {
-    return axios.delete(`${API_URL}/owners/${id}`);
+  return api.delete(`/owners/${id}`);
 };
 
 // Pet API
 export const getPetTypes = () => {
-    return axios.get(`${API_URL}/pettypes`);
+  return api.get('/pettypes');
 };
 
 export const getPetById = (id) => {
-    return axios.get(`${API_URL}/pets/${id}`);
+  return api.get(`/pets/${id}`);
 };
 
 export const createPet = (ownerId, pet) => {
-    return axios.post(`${API_URL}/owners/${ownerId}/pets`, pet);
+  return api.post(`/owners/${ownerId}/pets`, pet);
 };
 
 export const updatePet = (ownerId, petId, pet) => {
-    return axios.put(`${API_URL}/owners/${ownerId}/pets/${petId}`, pet);
+  return api.put(`/owners/${ownerId}/pets/${petId}`, pet);
 };
 
 // Visit API
 export const getVisitsByPetId = (petId) => {
-    return axios.get(`${API_URL}/pets/${petId}/visits`);
+  return api.get(`/pets/${petId}/visits`);
 };
 
 export const createVisit = (ownerId, petId, visit) => {
-    return axios.post(`${API_URL}/owners/${ownerId}/pets/${petId}/visits`, visit);
+  return api.post(`/owners/${ownerId}/pets/${petId}/visits`, visit);
 };
 
 // Vet API
 export const getVets = () => {
-    return axios.get(`${API_URL}/vets`);
+  return api.get('/vets');
 };

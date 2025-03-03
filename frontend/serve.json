@@ -1,0 +1,26 @@
+{
+  "public": "build",
+  "port": 3000,
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:8080",
+      "changeOrigin": true
+    },
+    "/owners": {
+      "target": "http://localhost:8080/api",
+      "changeOrigin": true
+    },
+    "/pets": {
+      "target": "http://localhost:8080/api",
+      "changeOrigin": true
+    },
+    "/vets": {
+      "target": "http://localhost:8080/api",
+      "changeOrigin": true
+    },
+    "/visits": {
+      "target": "http://localhost:8080/api",
+      "changeOrigin": true
+    }
+  }
+} 

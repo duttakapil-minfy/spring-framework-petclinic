@@ -14,36 +14,21 @@ const OwnersList = () => {
     try {
       const response = await getOwners(lastName);
       console.log('Raw response:', response);
-      console.log('Response data type:', typeof response.data);
       
-      // First, ensure we have valid data to work with
-      let dataToProcess = response.data;
-      
-      // If the data is a string (JSON), try to parse it
-      if (typeof dataToProcess === 'string') {
-        try {
-          dataToProcess = JSON.parse(dataToProcess);
-        } catch (e) {
-          console.error('Failed to parse JSON string:', e);
-        }
-      }
-      
-      // Extract the owners array from the response
-      const ownersArray = dataToProcess?.owners || [];
+      // The API returns an array directly, not wrapped in an 'owners' property
+      const ownersArray = Array.isArray(response.data) ? response.data : [];
       console.log('Owners array:', ownersArray);
       
-      // Extract and clean up owner data to prevent recursion issues
+      // Extract and clean up owner data
       const cleanOwners = ownersArray.map(owner => {
-        console.log('Processing owner:', owner);
         return {
-          id: owner?.id || generateTempId(owner), // Generate a temporary ID if none exists
+          id: owner?.id || generateTempId(owner),
           firstName: owner?.firstName || '',
           lastName: owner?.lastName || '',
           address: owner?.address || '',
           city: owner?.city || '',
           telephone: owner?.telephone || '',
           pets: Array.isArray(owner?.pets) ? owner.pets.map(pet => {
-            console.log('Processing pet:', pet);
             return {
               id: pet?.id || generateTempId(pet),
               name: pet?.name || '',
