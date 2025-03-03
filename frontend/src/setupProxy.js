@@ -2,20 +2,13 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
-    ['/api', '/owners', '/pets', '/vets', '/visits'],
+    // Only proxy API requests, not static files
+    '/api',
     createProxyMiddleware({
       target: 'http://localhost:8080',
       changeOrigin: true,
       secure: false,
       logLevel: 'debug',
-      pathRewrite: function (path, req) {
-        // If path already starts with /api, leave it as is
-        if (path.startsWith('/api/')) {
-          return path;
-        }
-        // Otherwise, prepend /api
-        return `/api${path}`;
-      },
       onProxyReq: (proxyReq, req, res) => {
         console.log('Proxy Request:', {
           path: req.path,
