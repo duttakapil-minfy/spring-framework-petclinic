@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a custom axios instance with specific configuration
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api', // Use relative URL for proxying
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -36,14 +36,9 @@ api.interceptors.response.use(
 
 // Owner API
 export const getOwners = (lastName = '') => {
-  // Use direct URL to avoid any path issues
-  return axios.get(`http://localhost:8080/api/owners${lastName ? `?lastName=${lastName}` : ''}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    withCredentials: true
-  });
+  // Use the correct search endpoint when lastName is provided
+  const endpoint = lastName ? `/owners/search?lastName=${lastName}` : '/owners';
+  return api.get(endpoint);
 };
 
 export const getOwnerById = (id) => {

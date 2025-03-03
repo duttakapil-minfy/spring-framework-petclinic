@@ -96,4 +96,20 @@ public class OwnerController {
         this.clinicService.saveOwner(owner);
         return ResponseEntity.ok(owner);
     }
+
+    @DeleteMapping("/{ownerId}")
+    public ResponseEntity<Map<String, String>> deleteOwner(@PathVariable("ownerId") int ownerId) {
+        Owner owner = this.clinicService.findOwnerById(ownerId);
+        if (owner == null) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Owner not found");
+            return ResponseEntity.status(404).body(response);
+        }
+        
+        this.clinicService.deleteOwner(owner);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Owner deleted successfully");
+        return ResponseEntity.ok(response);
+    }
 }

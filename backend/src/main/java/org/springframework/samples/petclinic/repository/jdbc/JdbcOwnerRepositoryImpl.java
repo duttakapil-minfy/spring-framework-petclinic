@@ -169,4 +169,17 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
         return owners;
     }
 
+    @Override
+    public void delete(Owner owner) {
+        // First delete all pets associated with this owner
+        this.jdbcClient.sql("DELETE FROM pets WHERE owner_id = :id")
+            .param("id", owner.getId())
+            .update();
+        
+        // Then delete the owner
+        this.jdbcClient.sql("DELETE FROM owners WHERE id = :id")
+            .param("id", owner.getId())
+            .update();
+    }
+
 }

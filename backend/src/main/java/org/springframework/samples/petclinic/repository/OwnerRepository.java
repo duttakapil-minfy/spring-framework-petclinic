@@ -65,4 +65,10 @@ public interface OwnerRepository {
      */
     Collection<Owner> findAll();
 
+    /**
+     * Delete an <code>Owner</code> from the data store.
+     * @param owner the <code>Owner</code> to delete
+     */
+    void delete(Owner owner);
+
 }

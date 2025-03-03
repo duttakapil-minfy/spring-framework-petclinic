@@ -115,4 +115,10 @@ public class ClinicServiceImpl implements ClinicService {
         return ownerRepository.findAll();
     }
 
+    @Override
+    @Transactional
+    public void deleteOwner(Owner owner) {
+        ownerRepository.delete(owner);
+    }
+
 }

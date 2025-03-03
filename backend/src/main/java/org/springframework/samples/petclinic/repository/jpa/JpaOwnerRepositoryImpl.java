@@ -85,4 +85,14 @@ public class JpaOwnerRepositoryImpl implements OwnerRepository {
         return this.em.createQuery("SELECT DISTINCT owner FROM Owner owner left join fetch owner.pets").getResultList();
     }
 
+    @Override
+    public void delete(Owner owner) {
+        // Make sure the entity is managed before removing it
+        Owner managedOwner = owner;
+        if (!this.em.contains(owner)) {
+            managedOwner = this.em.merge(owner);
+        }
+        this.em.remove(managedOwner);
+    }
+
 }

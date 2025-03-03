@@ -15,32 +15,29 @@
  */
 package org.springframework.samples.petclinic.web;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
 import org.springframework.samples.petclinic.service.ClinicService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.util.StringUtils;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-
-import java.util.Collection;
-
 /**
- * @author Juergen Hoeller
- * @author Ken Krebs
- * @author Arjen Poutsma
+ * REST Controller for Pet operations
  */
-@Controller
-@RequestMapping("/owners/{ownerId}")
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class PetController {
 
-    private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
     private final ClinicService clinicService;
 
     @Autowired
@@ -48,66 +45,36 @@ public class PetController {
         this.clinicService = clinicService;
     }
 
-    @ModelAttribute("types")
-    public Collection<PetType> populatePetTypes() {
-        return this.clinicService.findPetTypes();
-    }
-
-    @ModelAttribute("owner")
-    public Owner findOwner(@PathVariable("ownerId") int ownerId) {
-        return this.clinicService.findOwnerById(ownerId);
-    }
-
-    @InitBinder("owner")
-    public void initOwnerBinder(WebDataBinder dataBinder) {
+    @InitBinder
+    public void setAllowedFields(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
     }
 
-    @InitBinder("pet")
-    public void initPetBinder(WebDataBinder dataBinder) {
-        dataBinder.setValidator(new PetValidator());
+    @GetMapping("/pettypes")
+    public ResponseEntity<Collection<PetType>> getPetTypes() {
+        return ResponseEntity.ok(this.clinicService.findPetTypes());
     }
 
-    @GetMapping(value = "/pets/new")
-    public String initCreationForm(Owner owner, ModelMap model) {
-        Pet pet = new Pet();
-        owner.addPet(pet);
-        model.put("pet", pet);
-        return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-    }
-
-    @PostMapping(value = "/pets/new")
-    public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, ModelMap model) {
-        if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null){
-            result.rejectValue("name", "duplicate", "already exists");
-        }
-        if (result.hasErrors()) {
-            model.put("pet", pet);
-            return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-        }
-
-        owner.addPet(pet);
-        this.clinicService.savePet(pet);
-        return "redirect:/owners/{ownerId}";
-    }
-
-    @GetMapping(value = "/pets/{petId}/edit")
-    public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
+    @GetMapping("/pets/{petId}")
+    public ResponseEntity<Pet> getPet(@PathVariable("petId") int petId) {
         Pet pet = this.clinicService.findPetById(petId);
-        model.put("pet", pet);
-        return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
+        return ResponseEntity.ok(pet);
     }
 
-    @PostMapping(value = "/pets/{petId}/edit")
-    public String processUpdateForm(@Valid Pet pet, BindingResult result, Owner owner, ModelMap model) {
-        if (result.hasErrors()) {
-            model.put("pet", pet);
-            return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-        }
-
+    @PostMapping("/owners/{ownerId}/pets")
+    public ResponseEntity<Pet> createPet(@PathVariable("ownerId") int ownerId, @Valid @RequestBody Pet pet) {
+        Owner owner = this.clinicService.findOwnerById(ownerId);
         owner.addPet(pet);
         this.clinicService.savePet(pet);
-        return "redirect:/owners/{ownerId}";
+        return ResponseEntity.ok(pet);
     }
 
+    @PutMapping("/owners/{ownerId}/pets/{petId}")
+    public ResponseEntity<Pet> updatePet(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId, @Valid @RequestBody Pet pet) {
+        pet.setId(petId);
+        Owner owner = this.clinicService.findOwnerById(ownerId);
+        pet.setOwner(owner);
+        this.clinicService.savePet(pet);
+        return ResponseEntity.ok(pet);
+    }
 }
