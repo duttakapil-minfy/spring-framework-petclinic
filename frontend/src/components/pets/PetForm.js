@@ -35,11 +35,28 @@ const PetForm = () => {
           const petData = petResponse.data;
           
           // Format date for input field (YYYY-MM-DD)
-          const birthDate = new Date(petData.birthDate);
-          const formattedDate = birthDate.toISOString().split('T')[0];
+          let formattedDate = '';
+          if (petData.birthDate) {
+            // Handle different date formats
+            let birthDate;
+            if (Array.isArray(petData.birthDate)) {
+              // Handle [year, month, day] format
+              birthDate = new Date(
+                petData.birthDate[0], 
+                petData.birthDate[1] - 1, // Month is 0-indexed in JS Date
+                petData.birthDate[2]
+              );
+            } else {
+              // Handle string format
+              birthDate = new Date(petData.birthDate);
+            }
+            
+            // Format as YYYY-MM-DD for input field
+            formattedDate = birthDate.toISOString().split('T')[0];
+          }
           
           setPet({
-            name: petData.name,
+            name: petData.name || '',
             birthDate: formattedDate,
             typeId: petData.type ? petData.type.id : ''
           });
@@ -67,10 +84,16 @@ const PetForm = () => {
     e.preventDefault();
     
     try {
+      const petData = {
+        ...pet,
+        // Ensure typeId is sent as a number
+        typeId: pet.typeId ? parseInt(pet.typeId, 10) : null
+      };
+      
       if (isNewPet) {
-        await createPet(ownerId, pet);
+        await createPet(ownerId, petData);
       } else {
-        await updatePet(ownerId, petId, pet);
+        await updatePet(ownerId, petId, petData);
       }
       navigate(`/owners/${ownerId}`);
     } catch (error) {

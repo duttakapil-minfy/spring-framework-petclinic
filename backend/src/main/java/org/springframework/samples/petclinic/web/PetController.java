@@ -15,6 +15,8 @@
  */
 package org.springframework.samples.petclinic.web;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,19 +64,96 @@ public class PetController {
     }
 
     @PostMapping("/owners/{ownerId}/pets")
-    public ResponseEntity<Pet> createPet(@PathVariable("ownerId") int ownerId, @Valid @RequestBody Pet pet) {
-        Owner owner = this.clinicService.findOwnerById(ownerId);
-        owner.addPet(pet);
-        this.clinicService.savePet(pet);
-        return ResponseEntity.ok(pet);
+    public ResponseEntity<Pet> createPet(@PathVariable("ownerId") int ownerId, @RequestBody Map<String, Object> petData) {
+        try {
+            Owner owner = this.clinicService.findOwnerById(ownerId);
+            if (owner == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Pet pet = new Pet();
+            pet.setName((String) petData.get("name"));
+            
+            // Handle birth date
+            String birthDateStr = (String) petData.get("birthDate");
+            if (birthDateStr != null && !birthDateStr.isEmpty()) {
+                LocalDate birthDate = LocalDate.parse(birthDateStr);
+                pet.setBirthDate(birthDate);
+            }
+            
+            // Handle pet type
+            Integer typeId = null;
+            if (petData.get("typeId") instanceof String) {
+                typeId = Integer.parseInt((String) petData.get("typeId"));
+            } else if (petData.get("typeId") instanceof Integer) {
+                typeId = (Integer) petData.get("typeId");
+            }
+            
+            if (typeId != null) {
+                Collection<PetType> types = this.clinicService.findPetTypes();
+                for (PetType type : types) {
+                    if (type.getId() == typeId) {
+                        pet.setType(type);
+                        break;
+                    }
+                }
+            }
+            
+            owner.addPet(pet);
+            this.clinicService.savePet(pet);
+            return ResponseEntity.ok(pet);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/owners/{ownerId}/pets/{petId}")
-    public ResponseEntity<Pet> updatePet(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId, @Valid @RequestBody Pet pet) {
-        pet.setId(petId);
-        Owner owner = this.clinicService.findOwnerById(ownerId);
-        pet.setOwner(owner);
-        this.clinicService.savePet(pet);
-        return ResponseEntity.ok(pet);
+    public ResponseEntity<Pet> updatePet(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId, @RequestBody Map<String, Object> petData) {
+        try {
+            Owner owner = this.clinicService.findOwnerById(ownerId);
+            if (owner == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Pet pet = this.clinicService.findPetById(petId);
+            if (pet == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            pet.setName((String) petData.get("name"));
+            
+            // Handle birth date
+            String birthDateStr = (String) petData.get("birthDate");
+            if (birthDateStr != null && !birthDateStr.isEmpty()) {
+                LocalDate birthDate = LocalDate.parse(birthDateStr);
+                pet.setBirthDate(birthDate);
+            }
+            
+            // Handle pet type
+            Integer typeId = null;
+            if (petData.get("typeId") instanceof String) {
+                typeId = Integer.parseInt((String) petData.get("typeId"));
+            } else if (petData.get("typeId") instanceof Integer) {
+                typeId = (Integer) petData.get("typeId");
+            }
+            
+            if (typeId != null) {
+                Collection<PetType> types = this.clinicService.findPetTypes();
+                for (PetType type : types) {
+                    if (type.getId() == typeId) {
+                        pet.setType(type);
+                        break;
+                    }
+                }
+            }
+            
+            pet.setOwner(owner);
+            this.clinicService.savePet(pet);
+            return ResponseEntity.ok(pet);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
