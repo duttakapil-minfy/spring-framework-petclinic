@@ -13,9 +13,8 @@ const OwnersList = () => {
     setError(null);
     try {
       const response = await getOwners(lastName);
-      console.log('Raw response:', response);     
+      console.log('Raw response:', response);
       console.log('Response data type:', typeof response.data);
-      console.log('Is array?', Array.isArray(response.data));
       
       // First, ensure we have valid data to work with
       let dataToProcess = response.data;
@@ -29,31 +28,31 @@ const OwnersList = () => {
         }
       }
       
-      // Handle both array and single object responses
-      const dataArray = Array.isArray(dataToProcess) ? dataToProcess : 
-                       dataToProcess && typeof dataToProcess === 'object' ? [dataToProcess] : [];
-      
-      console.log('Data array to process:', dataArray);
+      // Extract the owners array from the response
+      const ownersArray = dataToProcess?.owners || [];
+      console.log('Owners array:', ownersArray);
       
       // Extract and clean up owner data to prevent recursion issues
-      const cleanOwners = dataArray.map(owner => {
+      const cleanOwners = ownersArray.map(owner => {
         console.log('Processing owner:', owner);
         return {
-          id: owner?.id,
-          firstName: owner?.firstName,
-          lastName: owner?.lastName,
-          address: owner?.address,
-          city: owner?.city,
-          telephone: owner?.telephone,
+          id: owner?.id || generateTempId(owner), // Generate a temporary ID if none exists
+          firstName: owner?.firstName || '',
+          lastName: owner?.lastName || '',
+          address: owner?.address || '',
+          city: owner?.city || '',
+          telephone: owner?.telephone || '',
           pets: Array.isArray(owner?.pets) ? owner.pets.map(pet => {
             console.log('Processing pet:', pet);
             return {
-              id: pet?.id,
-              name: pet?.name,
-              birthDate: pet?.birthDate,
+              id: pet?.id || generateTempId(pet),
+              name: pet?.name || '',
+              birthDate: Array.isArray(pet?.birthDate) 
+                ? `${pet.birthDate[0]}-${String(pet.birthDate[1]).padStart(2, '0')}-${String(pet.birthDate[2]).padStart(2, '0')}`
+                : '',
               type: pet?.type ? {
-                id: pet.type?.id,
-                name: pet.type?.name
+                id: pet.type?.id || 0,
+                name: pet.type?.name || ''
               } : null
             };
           }) : []
@@ -73,6 +72,11 @@ const OwnersList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to generate temporary IDs for items that don't have one
+  const generateTempId = (item) => {
+    return '_' + Math.random().toString(36).substr(2, 9);
   };
 
   useEffect(() => {
