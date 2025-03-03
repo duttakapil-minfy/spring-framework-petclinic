@@ -44,13 +44,10 @@ public interface ClinicService {
     Collection<Vet> findVets();
 
     void saveOwner(Owner owner);
-    
-    void deleteOwner(Owner owner);
 
     Collection<Owner> findOwnerByLastName(String lastName);
 
 	Collection<Visit> findVisitsByPetId(int petId);
-
     Collection<Owner> findAllOwners();
 
 }

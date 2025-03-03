@@ -58,17 +58,9 @@ public interface OwnerRepository {
      * @see BaseEntity#isNew
      */
     void save(Owner owner);
-    
-    /**
-     * Delete an <code>Owner</code> from the data store.
-     *
-     * @param owner the <code>Owner</code> to delete
-     */
-    void delete(Owner owner);
 
     /**
      * Retrieve all <code>Owner</code>s from the data store.
-     *
      * @return a <code>Collection</code> of <code>Owner</code>s
      */
     Collection<Owner> findAll();

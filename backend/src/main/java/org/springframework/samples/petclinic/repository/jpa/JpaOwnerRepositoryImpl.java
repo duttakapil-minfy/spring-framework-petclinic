@@ -75,19 +75,14 @@ public class JpaOwnerRepositoryImpl implements OwnerRepository {
         } else {
             this.em.merge(owner);
         }
-    }
-    
-    @Override
-    public void delete(Owner owner) {
-        // JPA will automatically cascade delete pets and associated visits
-        // if relationship is properly configured with CascadeType.REMOVE
-        this.em.remove(this.em.contains(owner) ? owner : this.em.merge(owner));
+
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Collection<Owner> findAll() {
-        return this.em.createQuery("SELECT owner FROM Owner owner ORDER BY owner.lastName").getResultList();
+        System.out.println("JPA calling");
+        return this.em.createQuery("SELECT DISTINCT owner FROM Owner owner left join fetch owner.pets").getResultList();
     }
 
 }

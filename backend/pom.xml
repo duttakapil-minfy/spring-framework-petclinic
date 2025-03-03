@@ -29,9 +29,6 @@
         <!-- https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-dependencies/build.gradle -->
         <!-- https://github.com/spring-projects/spring-boot/blob/main/gradle.properties -->
         <spring-framework.version>6.2.2</spring-framework.version>
-        
-        <!-- Swagger/OpenAPI -->
-        <springdoc-openapi.version>2.4.0</springdoc-openapi.version>
 
         <!-- Web dependencies -->
         <webjars-bootstrap.version>5.3.3</webjars-bootstrap.version> <!-- Report bootstrap version to the footer.tag -->
@@ -124,13 +121,6 @@
             <artifactId>tomcat-jasper-el</artifactId>
             <version>${tomcat.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- OpenAPI/Swagger Documentation -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi.version}</version>
         </dependency>
 
         <dependency>
@@ -343,33 +333,6 @@
             <version>${jakarta-activation.version}</version>
         </dependency>
 
-        <!-- Add these dependencies to your pom.xml -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.15</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webmvc-core</artifactId>
-            <version>1.6.15</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>2.2.8</version>
-        </dependency>
-
     </dependencies>
 
     <!-- Maven plugin versions are mentioned in order to guarantee the build reproducibility in the long term -->
@@ -501,11 +464,6 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty-maven-plugin.version}</version>
-                <configuration>
-                    <webApp>
-                        <contextPath>/</contextPath>
-                    </webApp>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -572,6 +530,12 @@
                 <jdbc.password/>
             </properties>
             <dependencies>
+                <dependency>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                    <version>2.18.2</version>
+                </dependency>
+
                 <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>

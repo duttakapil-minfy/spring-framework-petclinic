@@ -136,27 +136,6 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
                 .update();
         }
     }
-    
-    @Override
-    public void delete(Owner owner) {
-        // Delete visits for all pets of this owner
-        this.jdbcClient.sql("""
-                DELETE FROM visits 
-                WHERE pet_id IN (SELECT id FROM pets WHERE owner_id=:id)
-                """)
-            .param("id", owner.getId())
-            .update();
-            
-        // Delete all pets of this owner
-        this.jdbcClient.sql("DELETE FROM pets WHERE owner_id=:id")
-            .param("id", owner.getId())
-            .update();
-            
-        // Delete the owner
-        this.jdbcClient.sql("DELETE FROM owners WHERE id=:id")
-            .param("id", owner.getId())
-            .update();
-    }
 
     public Collection<PetType> getPetTypes() {
         return this.jdbcClient.sql("SELECT id, name FROM types ORDER BY name")
@@ -178,19 +157,15 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
 
     @Override
     public Collection<Owner> findAll() {
+        System.out.println("calling from jdbc");
         List<Owner> owners = this.jdbcClient.sql("""
                 SELECT id, first_name, last_name, address, city, telephone
                 FROM owners
-                ORDER BY last_name
+                ORDER BY last_name, first_name
                 """)
             .query(BeanPropertyRowMapper.newInstance(Owner.class))
             .list();
-        
-        // Load pets and visits for each owner
-        for (Owner owner : owners) {
-            loadPetsAndVisits(owner);
-        }
-        
+        loadOwnersPetsAndVisits(owners);
         return owners;
     }
 

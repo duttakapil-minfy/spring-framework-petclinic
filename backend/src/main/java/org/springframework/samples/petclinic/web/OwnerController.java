@@ -17,31 +17,25 @@ package org.springframework.samples.petclinic.web;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.HashMap;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.service.ClinicService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
- * @author Juergen Hoeller
- * @author Ken Krebs
- * @author Arjen Poutsma
- * @author Michael Isvy
+ * REST Controller for Owner operations
  */
-@Controller
+@RestController
+@RequestMapping("/api/owners")
 public class OwnerController {
 
-    private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final ClinicService clinicService;
-
 
     @Autowired
     public OwnerController(ClinicService clinicService) {
@@ -53,83 +47,52 @@ public class OwnerController {
         dataBinder.setDisallowedFields("id");
     }
 
-    @GetMapping(value = "/owners/new")
-    public String initCreationForm(Map<String, Object> model) {
-        Owner owner = new Owner();
-        model.put("owner", owner);
-        return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-    }
-
-    @PostMapping(value = "/owners/new")
-    public String processCreationForm(@Valid Owner owner, BindingResult result) {
-        if (result.hasErrors()) {
-            return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-        }
-
+    @PostMapping
+    public ResponseEntity<Owner> createOwner(@Valid @RequestBody Owner owner) {
         this.clinicService.saveOwner(owner);
-        return "redirect:/owners/" + owner.getId();
+        return ResponseEntity.ok(owner);
     }
 
-    @GetMapping(value = "/owners/find")
-    public String initFindForm(Map<String, Object> model) {
-        model.put("owner", new Owner());
-        return "owners/findOwners";
-    }
-
-    @GetMapping(value = "/owners")
-    public String processFindForm(Owner owner, BindingResult result, Map<String, Object> model) {
-
-        // allow parameterless GET request for /owners to return all records
-        if (owner.getLastName() == null) {
-            owner.setLastName(""); // empty string signifies broadest possible search
+    @GetMapping("/search")
+    public ResponseEntity<?> findOwners(@RequestParam(required = false) String lastName) {
+        if (lastName == null) {
+            lastName = "";
         }
-
-        // find owners by last name
-        Collection<Owner> results = this.clinicService.findOwnerByLastName(owner.getLastName());
+        Collection<Owner> results = this.clinicService.findOwnerByLastName(lastName);
         if (results.isEmpty()) {
-            // no owners found
-            result.rejectValue("lastName", "notFound", "not found");
-            return "owners/findOwners";
-        } else if (results.size() == 1) {
-            // 1 owner found
-            owner = results.iterator().next();
-            return "redirect:/owners/" + owner.getId();
-        } else {
-            // multiple owners found
-            model.put("selections", results);
-            return "owners/ownersList";
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No owners found");
+            return ResponseEntity.ok(response);
         }
+        return ResponseEntity.ok(results);
     }
 
-    @GetMapping(value = "/owners/{ownerId}/edit")
-    public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
+    @GetMapping
+    public ResponseEntity<Collection<Owner>> getAllOwners() {
+        Collection<Owner> owners = this.clinicService.findAllOwners();
+        System.out.println("owners list"+owners);
+        return ResponseEntity.ok(owners);
+    }
+//@GetMapping
+//public ResponseEntity<Map<String, Object>> getAllOwners() {
+//    Collection<Owner> owners = this.clinicService.findAllOwners();
+//    System.out.println("owners list"+owners);
+//    Map<String, Object> response = new HashMap<>();
+//    response.put("message", "Hello");
+//    response.put("owners",owners);
+//    return ResponseEntity.ok(response);
+//}
+
+    @GetMapping("/{ownerId}")
+    public ResponseEntity<Owner> getOwner(@PathVariable("ownerId") int ownerId) {
         Owner owner = this.clinicService.findOwnerById(ownerId);
-        model.addAttribute(owner);
-        return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
+        return ResponseEntity.ok(owner);
     }
 
-    @PostMapping(value = "/owners/{ownerId}/edit")
-    public String processUpdateOwnerForm(@Valid Owner owner, BindingResult result, @PathVariable("ownerId") int ownerId) {
-        if (result.hasErrors()) {
-            return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
-        }
-
+    @PutMapping("/{ownerId}")
+    public ResponseEntity<Owner> updateOwner(@Valid @RequestBody Owner owner, @PathVariable("ownerId") int ownerId) {
         owner.setId(ownerId);
         this.clinicService.saveOwner(owner);
-        return "redirect:/owners/{ownerId}";
+        return ResponseEntity.ok(owner);
     }
-
-    /**
-     * Custom handler for displaying an owner.
-     *
-     * @param ownerId the ID of the owner to display
-     * @return a ModelMap with the model attributes for the view
-     */
-    @GetMapping("/owners/{ownerId}")
-    public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
-        ModelAndView mav = new ModelAndView("owners/ownerDetails");
-        mav.addObject(this.clinicService.findOwnerById(ownerId));
-        return mav;
-    }
-
 }

@@ -15,10 +15,7 @@
  */
 package org.springframework.samples.petclinic;
 
-import org.springframework.context.annotation.Import;
-import org.springframework.samples.petclinic.config.RestApiConfig;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -64,15 +61,8 @@ public class PetclinicInitializer extends AbstractDispatcherServletInitializer {
 
     @Override
     protected WebApplicationContext createServletApplicationContext() {
-        // Create a Web Application Context that merges XML and annotation config
-        AnnotationConfigWebApplicationContext webAppContext = new AnnotationConfigWebApplicationContext();
-        
-        // Register the REST API configuration
-        webAppContext.register(RestApiConfig.class);
-        
-        // Also load the XML configuration
+        XmlWebApplicationContext webAppContext = new XmlWebApplicationContext();
         webAppContext.setConfigLocation("classpath:spring/mvc-core-config.xml");
-        
         return webAppContext;
     }
 
@@ -81,11 +71,15 @@ public class PetclinicInitializer extends AbstractDispatcherServletInitializer {
         return new String[]{"/"};
     }
 
+//    @Override
+//    protected String getServletContextPath() {
+//        return "";  // or return "/" for root context
+//    }
+
     @Override
     protected Filter[] getServletFilters() {
         // Used to provide the ability to enter Chinese characters inside the Owner Form
         CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter("UTF-8", true);
-        
         return new Filter[]{characterEncodingFilter};
     }
 
