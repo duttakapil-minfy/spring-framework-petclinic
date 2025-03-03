@@ -13,9 +13,62 @@ const OwnersList = () => {
     setError(null);
     try {
       const response = await getOwners(lastName);
-      setOwners(response.data);
+      console.log('Raw response:', response);     
+      console.log('Response data type:', typeof response.data);
+      console.log('Is array?', Array.isArray(response.data));
+      
+      // First, ensure we have valid data to work with
+      let dataToProcess = response.data;
+      
+      // If the data is a string (JSON), try to parse it
+      if (typeof dataToProcess === 'string') {
+        try {
+          dataToProcess = JSON.parse(dataToProcess);
+        } catch (e) {
+          console.error('Failed to parse JSON string:', e);
+        }
+      }
+      
+      // Handle both array and single object responses
+      const dataArray = Array.isArray(dataToProcess) ? dataToProcess : 
+                       dataToProcess && typeof dataToProcess === 'object' ? [dataToProcess] : [];
+      
+      console.log('Data array to process:', dataArray);
+      
+      // Extract and clean up owner data to prevent recursion issues
+      const cleanOwners = dataArray.map(owner => {
+        console.log('Processing owner:', owner);
+        return {
+          id: owner?.id,
+          firstName: owner?.firstName,
+          lastName: owner?.lastName,
+          address: owner?.address,
+          city: owner?.city,
+          telephone: owner?.telephone,
+          pets: Array.isArray(owner?.pets) ? owner.pets.map(pet => {
+            console.log('Processing pet:', pet);
+            return {
+              id: pet?.id,
+              name: pet?.name,
+              birthDate: pet?.birthDate,
+              type: pet?.type ? {
+                id: pet.type?.id,
+                name: pet.type?.name
+              } : null
+            };
+          }) : []
+        };
+      });
+
+      console.log('Final cleaned owners:', cleanOwners);
+      setOwners(cleanOwners);
     } catch (error) {
       console.error('Error fetching owners:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        data: error.response?.data
+      });
       setError('Failed to fetch owners. Please try again later.');
     } finally {
       setLoading(false);
@@ -30,6 +83,19 @@ const OwnersList = () => {
     e.preventDefault();
     fetchOwners(searchLastName);
   };
+
+  // Early return for loading state
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Early return for error state
+  if (error) {
+    return <div className="alert alert-danger">{error}</div>;
+  }
+
+  // Ensure owners is always an array
+  const ownersList = Array.isArray(owners) ? owners : [];
 
   return (
     <div>
@@ -53,15 +119,9 @@ const OwnersList = () => {
         <Link to="/owners/new" className="btn btn-success">Add Owner</Link>
       </form>
 
-      {loading && <p>Loading...</p>}
-      
-      {error && <div className="alert alert-danger">{error}</div>}
-      
-      {!loading && !error && owners.length === 0 && (
+      {ownersList.length === 0 ? (
         <div className="alert alert-info">No owners found</div>
-      )}
-      
-      {!loading && !error && owners.length > 0 && (
+      ) : (
         <table className="table table-striped">
           <thead>
             <tr>
@@ -73,7 +133,7 @@ const OwnersList = () => {
             </tr>
           </thead>
           <tbody>
-            {owners.map((owner) => (
+            {ownersList.map((owner) => (
               <tr key={owner.id}>
                 <td>
                   <Link to={`/owners/${owner.id}`}>

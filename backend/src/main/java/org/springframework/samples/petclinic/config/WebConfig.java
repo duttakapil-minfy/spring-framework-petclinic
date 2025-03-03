@@ -10,20 +10,46 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+
+import java.util.List;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.springframework.samples.petclinic.rest"})
+@ComponentScan(basePackages = {
+    "org.springframework.samples.petclinic.web",
+    "org.springframework.samples.petclinic.rest",
+    "org.springframework.samples.petclinic.config"
+})
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer
+            .defaultContentType(MediaType.APPLICATION_JSON)
+            .mediaType("json", MediaType.APPLICATION_JSON)
+            .mediaType("xml", MediaType.APPLICATION_XML);
+    }
+
+    @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
+        registry.addMapping("/api/**")
             .allowedOrigins("*")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*");
+            .allowedHeaders("*")
+            .maxAge(3600);
     }
-    
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(new MappingJackson2HttpMessageConverter());
+        converters.add(new MappingJackson2XmlHttpMessageConverter());
+    }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/swagger-ui/**")

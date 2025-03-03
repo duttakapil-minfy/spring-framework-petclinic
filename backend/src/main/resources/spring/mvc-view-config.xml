@@ -9,8 +9,8 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!--
     - The ContentNegotiatingViewResolver delegates to the InternalResourceViewResolver and BeanNameViewResolver,
-    - and uses the requested media type (determined by the path extension) to pick a matching view. 
-    - When the media type is 'text/html', it will delegate to the InternalResourceViewResolver's JstlView, 
+    - and uses the requested media type (determined by the path extension) to pick a matching view.
+    - When the media type is 'text/html', it will delegate to the InternalResourceViewResolver's JstlView,
     - otherwise to the BeanNameViewResolver.
     -->
     <mvc:view-resolvers>
@@ -24,7 +24,7 @@
 
         <!-- Registering BeanNameViewResolver and InternalViewResolver -->
         <mvc:bean-name/>
-        <mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp"/>
+<!--        <mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp"/>-->
     </mvc:view-resolvers>
 
     <!-- Renders an XML view. Used by the BeanNameViewResolver  -->
